@@ -57,11 +57,15 @@ router.post('/register', mw.checkUsernameFree, mw.checkPasswordLength, async (re
  */
 router.post('/login', mw.checkUsernameExists, async (req, res, next) => {
   const { username, password } = req.body
-  if(bcrypt.compareSync(password, req.user.password)) {
-    req.session.user = req.user
-    res.status(200).json({ message: `Welcome ${username}` })
-  } else {
-    next({ status: 401, message: 'Invalid credentials' })
+  try {
+    if(bcrypt.compareSync(password, req.user.password)) {
+      req.session.user = req.user
+      res.status(200).json({ message: `Welcome ${username}` })
+    } else {
+      next({ status: 401, message: 'Invalid credentials' })
+    }
+  } catch(err) {
+    next(err)
   }
 })
 
@@ -89,6 +93,8 @@ router.get('/logout', (req, res, next) => {
         res.status(200).json({ message: 'logged out' })
       }
     })
+  } else {
+    res.status(200).json({ message: 'no session' })
   }
 })
  
